@@ -1,7 +1,7 @@
 const { Plugin } = require('powercord/entities')
 
 module.exports = class AudioViz extends Plugin {
-  startPlugin () {
+  startPlugin() {
     setTimeout(() => {
       this.intervals = []
       this.startVisualizer()
@@ -9,7 +9,7 @@ module.exports = class AudioViz extends Plugin {
     }, 0)
   }
 
-  reload () {
+  reload() {
     this.stopVisualizer()
     this.startVisualizer()
   }
@@ -18,16 +18,14 @@ module.exports = class AudioViz extends Plugin {
     this.stopVisualizer()
   }
 
-  stopVisualizer () {
-      clearInterval(this.interval)
-      cancelAnimationFrame(this.frame)
-      const filter = document.getElementById('vp-audioviz-goo');
-      const viz = document.getElementById('vp-audioviz-visualizer');
-      filter.parentNode.removeChild(filter);
-      viz.parentNode.removeChild(viz);
+  stopVisualizer() {
+    clearInterval(this.interval)
+    cancelAnimationFrame(this.frame)
+    const viz = document.getElementById('vp-audioviz-visualizer');
+    viz.parentNode.removeChild(viz);
   }
 
-  startVisualizer () {
+  startVisualizer() {
     const { desktopCapturer } = require('electron')
     desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async () => {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -45,7 +43,7 @@ module.exports = class AudioViz extends Plugin {
 
       const audioCtx = new AudioContext()
       const audio = audioCtx.createMediaStreamSource(stream)
-      const easeInOutCubic = t => t<.5 ? 4*t*t*t : (t-1)*(2*t-2)*(2*t-2)+1
+      const easeInOutCubic = t => t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1
       const barCount = 20
 
       const analyser = audioCtx.createAnalyser()
@@ -58,21 +56,8 @@ module.exports = class AudioViz extends Plugin {
       for (let i = 0; i < barCount; i++) {
         let bar = document.createElement('div')
         bar.classList.add('vp-audioviz-bar')
-        bar.style.height = "1px";
         visualizer.appendChild(bar)
       }
-      const visualizerGoo = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-      visualizerGoo.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns', 'http://www.w3.org/2000/svg')
-      visualizerGoo.setAttributeNS('http://www.w3.org/2000/version/', 'version', '1.1')
-      visualizerGoo.classList.add('vp-audioviz-goo')
-      visualizerGoo.id = 'vp-audioviz-goo'
-      visualizerGoo.innerHTML = `
-        <filter id="vpVisualizerGoo">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"></feGaussianBlur>
-          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="vpVisualizerGoo"></feColorMatrix>
-          <feComposite in="SourceGraphic" in2="vpVisualizerGoo" operator="atop"></feComposite>
-        </filter>
-      `
 
       const findElement = setInterval(() => {
         if (accountContainer) {
@@ -81,7 +66,6 @@ module.exports = class AudioViz extends Plugin {
           accountContainer = document.querySelector('.panels-j1Uci_ > .container-3baos1:last-child')
           if (accountContainer) {
             accountContainer.prepend(visualizer)
-            accountContainer.prepend(visualizerGoo)
           }
         }
       }, 1000)
@@ -93,9 +77,9 @@ module.exports = class AudioViz extends Plugin {
 
         for (let i = 0; i < barCount; i++) {
           const y = dataArray[i * 2]
-          const height = easeInOutCubic(Math.min(1, y / 255)) * 100
+          const height = easeInOutCubic(Math.min(1, y / 255)) * 90
           const bar = visualizer.children[i]
-          bar.style.transform = `scale(1, ${height})`;
+          bar.style.height = `${height}%`;
         }
         requestAnimationFrame(func)
       }
